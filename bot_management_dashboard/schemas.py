@@ -84,6 +84,35 @@ class StrategyResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class BacktestRunRequest(BaseModel):
+    strategy_ids: list[int] = Field(min_length=1, max_length=20)
+    timerange_days: int = Field(default=90, ge=7, le=3650)
+    initial_balance: float = Field(default=10000.0, gt=0)
+    fee_pct: float = Field(default=0.1, ge=0, le=5)
+    slippage_pct: float = Field(default=0.05, ge=0, le=5)
+
+
+class BacktestStrategyResult(BaseModel):
+    strategy_id: int
+    strategy_name: str
+    total_trades: int
+    win_rate: float
+    max_drawdown: float
+    total_return_pct: float
+    net_profit: float
+    sharpe: float
+    score: float
+    equity_curve: list[float]
+
+
+class BacktestRunResponse(BaseModel):
+    generated_at: datetime
+    timerange_days: int
+    initial_balance: float
+    best_strategy_id: int
+    results: list[BacktestStrategyResult]
+
+
 class BotRunRequest(BaseModel):
     strategy_id: int = Field(ge=1)
 

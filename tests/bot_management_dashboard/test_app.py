@@ -177,3 +177,61 @@ def test_strategy_run_and_dashboard_flow(dashboard_client):
     assert overview["telegram_configured"] is True
     assert overview["active_strategy_id"] == strategy_id
 
+
+def test_backtesting_comparison_tab_data(dashboard_client):
+    client, _dashboard_main = dashboard_client
+    _wallet_address, headers = _sign_in(client)
+
+    strategy_a = client.post(
+        "/api/strategies",
+        json={
+            "name": "trend-alpha",
+            "parameters": {
+                "template": "trend-follow",
+                "timeframe": "5m",
+                "max_open_trades": 3,
+                "risk": {"level": "medium"},
+                "signals": {"entry": "ema_cross"},
+            },
+            "enabled": True,
+        },
+        headers=headers,
+    )
+    strategy_b = client.post(
+        "/api/strategies",
+        json={
+            "name": "reversion-beta",
+            "parameters": {
+                "template": "mean-reversion",
+                "timeframe": "15m",
+                "max_open_trades": 2,
+                "risk": {"level": "low"},
+                "signals": {"entry": "rsi_reversal"},
+            },
+            "enabled": True,
+        },
+        headers=headers,
+    )
+    assert strategy_a.status_code == 200
+    assert strategy_b.status_code == 200
+
+    response = client.post(
+        "/api/backtesting/run",
+        json={
+            "strategy_ids": [strategy_a.json()["id"], strategy_b.json()["id"]],
+            "timerange_days": 180,
+            "initial_balance": 15000,
+            "fee_pct": 0.1,
+            "slippage_pct": 0.05,
+        },
+        headers=headers,
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["timerange_days"] == 180
+    assert payload["initial_balance"] == 15000
+    assert len(payload["results"]) == 2
+    assert payload["results"][0]["score"] >= payload["results"][1]["score"]
+    assert payload["best_strategy_id"] in [strategy_a.json()["id"], strategy_b.json()["id"]]
+    assert len(payload["results"][0]["equity_curve"]) == 12
+

@@ -37,6 +37,15 @@ function setStatus(id, message, isError = false) {
   el.classList.toggle("error", isError);
 }
 
+function setActiveTab(tabTarget) {
+  document.querySelectorAll(".tab-btn").forEach((button) => {
+    button.classList.toggle("active", button.dataset.tabTarget === tabTarget);
+  });
+  document.querySelectorAll(".tab-panel").forEach((panel) => {
+    panel.classList.toggle("active", panel.id === `tab-${tabTarget}`);
+  });
+}
+
 async function apiRequest(path, { method = "GET", body, auth = true } = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -145,6 +154,140 @@ function renderConfigLists(strategies, exchanges) {
       li.textContent = `${exchange.exchange_name}: ${exchange.api_key_masked}`;
       exchangeListEl.appendChild(li);
     });
+  }
+}
+
+function resetBacktestResults(message = "Run a comparison to view results.") {
+  document.getElementById("backtest-best-strategy").textContent = "-";
+  document.getElementById("backtest-strategy-count").textContent = "-";
+  document.getElementById("backtest-top-profit").textContent = "-";
+  document.getElementById("backtest-top-return").textContent = "-";
+
+  const body = document.getElementById("backtest-results-body");
+  body.innerHTML = "";
+  const row = document.createElement("tr");
+  const cell = document.createElement("td");
+  cell.colSpan = 8;
+  cell.textContent = message;
+  row.appendChild(cell);
+  body.appendChild(row);
+}
+
+function renderBacktestSelectors(strategies) {
+  const container = document.getElementById("backtest-strategy-selectors");
+  const existingSelections = new Set(
+    Array.from(container.querySelectorAll("input[type='checkbox']:checked")).map((node) => Number(node.value))
+  );
+
+  container.innerHTML = "";
+  if (!strategies.length) {
+    const empty = document.createElement("p");
+    empty.className = "panel-subtitle";
+    empty.textContent = "No saved strategies yet. Create one in Operations first.";
+    container.appendChild(empty);
+    return;
+  }
+
+  strategies.forEach((strategy, index) => {
+    const row = document.createElement("div");
+    row.className = "selector-row";
+
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = String(strategy.id);
+
+    const shouldSelect =
+      existingSelections.has(strategy.id) ||
+      (!existingSelections.size && (strategy.id === activeStrategyId || (!activeStrategyId && index === 0)));
+    checkbox.checked = shouldSelect;
+
+    const text = document.createElement("span");
+    text.textContent = `${strategy.name} (id: ${strategy.id})`;
+
+    label.appendChild(checkbox);
+    label.appendChild(text);
+    row.appendChild(label);
+    container.appendChild(row);
+  });
+}
+
+function getSelectedBacktestStrategyIds() {
+  return Array.from(document.querySelectorAll("#backtest-strategy-selectors input[type='checkbox']:checked")).map(
+    (node) => Number(node.value)
+  );
+}
+
+function renderBacktestResults(payload) {
+  const results = payload.results || [];
+  if (!results.length) {
+    resetBacktestResults("No backtest results available.");
+    return;
+  }
+
+  const best = results.find((result) => result.strategy_id === payload.best_strategy_id) || results[0];
+  document.getElementById("backtest-best-strategy").textContent = `${best.strategy_name} (#${best.strategy_id})`;
+  document.getElementById("backtest-strategy-count").textContent = String(results.length);
+  document.getElementById("backtest-top-profit").textContent = `$${best.net_profit.toLocaleString()}`;
+  document.getElementById("backtest-top-return").textContent = `${best.total_return_pct.toFixed(2)}%`;
+
+  const body = document.getElementById("backtest-results-body");
+  body.innerHTML = "";
+  results.forEach((result) => {
+    const row = document.createElement("tr");
+    if (result.strategy_id === payload.best_strategy_id) {
+      row.classList.add("winner-row");
+    }
+    const cells = [
+      `${result.strategy_name} (#${result.strategy_id})`,
+      String(result.total_trades),
+      `${result.win_rate.toFixed(2)}%`,
+      `${result.max_drawdown.toFixed(2)}%`,
+      `${result.total_return_pct.toFixed(2)}%`,
+      `$${result.net_profit.toLocaleString()}`,
+      result.sharpe.toFixed(2),
+      result.score.toFixed(2),
+    ];
+    cells.forEach((value) => {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.appendChild(cell);
+    });
+    body.appendChild(row);
+  });
+}
+
+async function runBacktestComparison() {
+  if (!authToken) {
+    setStatus("backtest-status", "Sign in before running backtests.", true);
+    return;
+  }
+  const strategyIds = getSelectedBacktestStrategyIds();
+  if (!strategyIds.length) {
+    setStatus("backtest-status", "Select at least one strategy.", true);
+    return;
+  }
+
+  try {
+    const payload = {
+      strategy_ids: strategyIds,
+      timerange_days: Math.round(toNumber(document.getElementById("backtest-timerange-days").value, 180)),
+      initial_balance: toNumber(document.getElementById("backtest-initial-balance").value, 15000),
+      fee_pct: toNumber(document.getElementById("backtest-fee-pct").value, 0.1),
+      slippage_pct: toNumber(document.getElementById("backtest-slippage-pct").value, 0.05),
+    };
+    const response = await apiRequest("/api/backtesting/run", {
+      method: "POST",
+      body: payload,
+    });
+    renderBacktestResults(response);
+    setStatus("backtest-status", `Backtest complete for ${response.results.length} strategy(s).`);
+    setStatus(
+      "backtest-meta",
+      `Generated ${new Date(response.generated_at).toLocaleString()} · ${response.timerange_days} day range.`
+    );
+  } catch (error) {
+    setStatus("backtest-status", error.message, true);
   }
 }
 
@@ -318,6 +461,7 @@ function renderOverview(overview, strategies, exchanges) {
   setChecklistState("check-telegram", overview.telegram_configured);
   setChecklistState("check-running", overview.bot_status === "running");
   renderConfigLists(strategies, exchanges);
+  renderBacktestSelectors(strategies);
 }
 
 async function refreshDashboardAndConfig() {
@@ -329,6 +473,9 @@ async function refreshDashboardAndConfig() {
     setChecklistState("check-telegram", false);
     setChecklistState("check-running", false);
     renderConfigLists([], []);
+    renderBacktestSelectors([]);
+    resetBacktestResults();
+    setStatus("backtest-meta", "Sign in to run backtesting.");
     return;
   }
   try {
@@ -345,6 +492,13 @@ async function refreshDashboardAndConfig() {
 }
 
 async function boot() {
+  setActiveTab("operations");
+  document.querySelectorAll(".tab-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      setActiveTab(button.dataset.tabTarget);
+    });
+  });
+
   renderStrategyPreview();
   [
     "strategy-template",
@@ -373,6 +527,9 @@ async function boot() {
     setStatus("auth-status", "Logged out.");
     setStatus("dashboard-status", "Sign in to load dashboard.");
     renderConfigLists([], []);
+    renderBacktestSelectors([]);
+    resetBacktestResults();
+    setStatus("backtest-meta", "Sign in to run backtesting.");
   });
   document.getElementById("btn-save-exchange").addEventListener("click", saveExchangeCredentials);
   document.getElementById("btn-save-strategy").addEventListener("click", saveStrategy);
@@ -380,6 +537,10 @@ async function boot() {
   document.getElementById("btn-run-bot").addEventListener("click", runBot);
   document.getElementById("btn-stop-bot").addEventListener("click", stopBot);
   document.getElementById("btn-refresh-dashboard").addEventListener("click", refreshDashboardAndConfig);
+  document.getElementById("btn-go-backtesting").addEventListener("click", () => {
+    setActiveTab("backtesting");
+  });
+  document.getElementById("btn-run-backtest").addEventListener("click", runBacktestComparison);
 
   if (authToken) {
     try {
@@ -392,9 +553,14 @@ async function boot() {
       clearAuth();
       setStatus("auth-status", "Previous session expired, please sign in again.");
       renderConfigLists([], []);
+      renderBacktestSelectors([]);
+      resetBacktestResults();
     }
   } else {
     renderConfigLists([], []);
+    renderBacktestSelectors([]);
+    resetBacktestResults();
+    setStatus("backtest-meta", "Sign in to run backtesting.");
   }
 }
 

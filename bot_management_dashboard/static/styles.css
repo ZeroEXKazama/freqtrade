@@ -48,6 +48,34 @@ h1 {
   background: #131d35;
 }
 
+.tab-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tab-btn {
+  border: 1px solid #365289;
+  background: #12203d;
+  color: #d8e5ff;
+  padding: 9px 14px;
+  border-radius: 10px;
+}
+
+.tab-btn.active {
+  border-color: #5d8dff;
+  background: linear-gradient(180deg, #3159d5 0%, #274ebf 100%);
+  color: #f3f7ff;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
 .layout {
   display: grid;
   grid-template-columns: 280px 1fr;
@@ -257,6 +285,47 @@ button:disabled {
   gap: 8px;
 }
 
+.nested-card {
+  border: 1px solid #2c3f64;
+  background: #0e1729;
+  box-shadow: none;
+}
+
+.nested-card h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #d5e1f8;
+}
+
+.selector-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.selector-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid #344a73;
+  border-radius: 10px;
+  background: #0d172c;
+}
+
+.selector-row label {
+  margin: 0;
+  color: #d2def8;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.selector-row input[type="checkbox"] {
+  width: auto;
+}
+
 .mini-list {
   margin: 12px 0 0;
   padding-left: 16px;
@@ -301,6 +370,43 @@ button:disabled {
 .soft {
   color: #99aeca;
   margin: 6px 0 0;
+}
+
+.table-wrap {
+  margin-top: 8px;
+  border: 1px solid #33496f;
+  border-radius: 10px;
+  overflow: auto;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.comparison-table th,
+.comparison-table td {
+  border-bottom: 1px solid #263754;
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.comparison-table th {
+  color: #cedaf1;
+  background: #101d33;
+  position: sticky;
+  top: 0;
+}
+
+.comparison-table td {
+  color: #a8bbde;
+}
+
+.comparison-table tr.winner-row td {
+  color: #d3ffd3;
+  background: rgba(34, 91, 57, 0.25);
 }
 
 @media (max-width: 1130px) {

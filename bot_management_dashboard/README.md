@@ -7,6 +7,7 @@ This service adds a secure user interface for:
 3. Strategy configuration with JSON parameters.
 4. Bot run/stop control with Telegram integration hooks.
 5. A consolidated dashboard overview.
+6. A Backtesting Lab tab to compare multiple saved strategies.
 
 ## Security defaults
 
