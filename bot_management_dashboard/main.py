@@ -32,6 +32,7 @@ from bot_management_dashboard.schemas import (
     BotStatusResponse,
     DashboardMetricsResponse,
     DashboardOverviewResponse,
+    DevLoginRequest,
     ExchangeCredentialResponse,
     ExchangeCredentialUpsert,
     StatusResponse,
@@ -242,6 +243,25 @@ def auth_verify(
     _ensure_metric(db, user.id)
 
     challenge.consumed_at = datetime.now(UTC)
+    access_token, expires_at = create_access_token(wallet_address, settings)
+    db.commit()
+    return TokenResponse(access_token=access_token, expires_at=expires_at)
+
+
+@app.post("/api/auth/dev-login", response_model=TokenResponse, tags=["Auth"])
+def auth_dev_login(payload: DevLoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
+    if settings.app_env == "production":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
+
+    wallet_address = normalize_wallet_address(payload.wallet_address)
+    user = db.scalar(select(User).where(User.wallet_address == wallet_address))
+    if user is None:
+        user = User(wallet_address=wallet_address)
+        db.add(user)
+        db.flush()
+    _ensure_runtime(db, user.id)
+    _ensure_metric(db, user.id)
+
     access_token, expires_at = create_access_token(wallet_address, settings)
     db.commit()
     return TokenResponse(access_token=access_token, expires_at=expires_at)

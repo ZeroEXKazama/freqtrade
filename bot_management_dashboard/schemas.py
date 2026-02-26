@@ -32,6 +32,10 @@ class TokenResponse(BaseModel):
     expires_at: datetime
 
 
+class DevLoginRequest(BaseModel):
+    wallet_address: str = Field(default="0x1111111111111111111111111111111111111111", pattern=_WALLET_PATTERN)
+
+
 class UserProfileResponse(BaseModel):
     wallet_address: str
     created_at: datetime

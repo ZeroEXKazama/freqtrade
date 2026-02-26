@@ -22,7 +22,10 @@ def dashboard_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     db_url = f"sqlite:///{db_file}"
 
     monkeypatch.setenv("DASHBOARD_DATABASE_URL", db_url)
-    monkeypatch.setenv("DASHBOARD_JWT_SECRET", "test-dashboard-jwt-secret")
+    monkeypatch.setenv(
+        "DASHBOARD_JWT_SECRET",
+        "test-dashboard-jwt-secret-with-minimum-thirty-two-bytes",
+    )
     monkeypatch.setenv("DASHBOARD_ENCRYPTION_KEY", Fernet.generate_key().decode("utf-8"))
     clear_settings_cache()
 
@@ -70,6 +73,19 @@ def test_auth_challenge_verify_and_profile(dashboard_client):
     wallet_address, headers = _sign_in(client)
 
     profile_response = client.get("/api/me", headers=headers)
+    assert profile_response.status_code == 200
+    assert profile_response.json()["wallet_address"] == wallet_address
+
+
+def test_dev_login_flow(dashboard_client):
+    client, _dashboard_main = dashboard_client
+    wallet_address = "0x1111111111111111111111111111111111111111"
+
+    login_response = client.post("/api/auth/dev-login", json={"wallet_address": wallet_address})
+    assert login_response.status_code == 200
+    token = login_response.json()["access_token"]
+
+    profile_response = client.get("/api/me", headers={"Authorization": f"Bearer {token}"})
     assert profile_response.status_code == 200
     assert profile_response.json()["wallet_address"] == wallet_address
 
