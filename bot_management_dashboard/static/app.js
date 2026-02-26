@@ -1,14 +1,29 @@
-import { MetaMaskSDK } from "https://esm.sh/@metamask/sdk@0.33.1";
+let ethereum = null;
 
-const sdk = new MetaMaskSDK({
-  dappMetadata: {
-    name: "Bot Management Dashboard",
-    url: window.location.origin,
-  },
-  checkInstallationImmediately: false,
-});
+async function initializeWalletProvider() {
+  if (window.ethereum) {
+    ethereum = window.ethereum;
+  }
 
-const ethereum = sdk.getProvider();
+  try {
+    const { MetaMaskSDK } = await import("https://esm.sh/@metamask/sdk@0.33.1?bundle");
+    const sdk = new MetaMaskSDK({
+      dappMetadata: {
+        name: "Bot Management Dashboard",
+        url: window.location.origin,
+      },
+      checkInstallationImmediately: false,
+    });
+    const sdkProvider = sdk.getProvider();
+    if (sdkProvider) {
+      ethereum = sdkProvider;
+    }
+  } catch (error) {
+    if (!ethereum) {
+      console.warn("MetaMask SDK unavailable, relying on injected provider only.", error);
+    }
+  }
+}
 
 let authToken = localStorage.getItem("dashboard_access_token") || "";
 let currentWallet = localStorage.getItem("dashboard_wallet") || "";
@@ -294,7 +309,10 @@ async function runBacktestComparison() {
 async function connectAndSignIn() {
   setStatus("auth-status", "Connecting wallet...");
   if (!ethereum) {
-    setStatus("auth-status", "MetaMask provider not detected.", true);
+    await initializeWalletProvider();
+  }
+  if (!ethereum) {
+    setStatus("auth-status", "MetaMask provider not detected. Install extension and retry.", true);
     return;
   }
   try {
@@ -492,6 +510,7 @@ async function refreshDashboardAndConfig() {
 }
 
 async function boot() {
+  await initializeWalletProvider();
   setActiveTab("operations");
   document.querySelectorAll(".tab-btn").forEach((button) => {
     button.addEventListener("click", () => {
