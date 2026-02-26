@@ -3,6 +3,7 @@ let ethereum = null;
 async function initializeWalletProvider() {
   if (window.ethereum) {
     ethereum = window.ethereum;
+    return;
   }
 
   try {
