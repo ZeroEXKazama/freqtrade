@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bot Management Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <div>
+          <h1>Bot Management Dashboard</h1>
+          <p class="subtitle">MetaMask auth, encrypted secrets, strategy control, and live status.</p>
+        </div>
+        <div class="wallet-pill" id="wallet-pill">Wallet: disconnected</div>
+      </header>
+
+      <section class="grid">
+        <article class="card">
+          <h2>1) Sign up with MetaMask SDK</h2>
+          <p>Connect your wallet and sign an auth challenge.</p>
+          <div class="actions">
+            <button id="btn-connect-wallet">Connect + Sign In</button>
+            <button id="btn-logout" class="secondary">Log out</button>
+          </div>
+          <div class="status" id="auth-status"></div>
+          <p class="mono" id="auth-wallet"></p>
+        </article>
+
+        <article class="card">
+          <h2>2) Exchange API Credentials</h2>
+          <p>Keys are encrypted at rest before persistence.</p>
+          <label>
+            <span>Exchange name</span>
+            <input id="exchange-name" value="binance" />
+          </label>
+          <label>
+            <span>API key</span>
+            <input id="exchange-api-key" type="password" />
+          </label>
+          <label>
+            <span>API secret</span>
+            <input id="exchange-api-secret" type="password" />
+          </label>
+          <label>
+            <span>Passphrase (optional)</span>
+            <input id="exchange-passphrase" type="password" />
+          </label>
+          <button id="btn-save-exchange">Save Exchange Credentials</button>
+          <div class="status" id="exchange-status"></div>
+        </article>
+
+        <article class="card">
+          <h2>3) Strategy Configuration</h2>
+          <p>Set strategy name and JSON parameters.</p>
+          <label>
+            <span>Strategy name</span>
+            <input id="strategy-name" value="default-strategy" />
+          </label>
+          <label>
+            <span>Strategy parameters JSON</span>
+            <textarea id="strategy-params">{"timeframe":"5m","stake_amount":100,"max_open_trades":3,"stoploss":-0.08,"take_profit":0.15}</textarea>
+          </label>
+          <button id="btn-save-strategy">Save Strategy</button>
+          <div class="status" id="strategy-status"></div>
+          <p class="mono" id="active-strategy"></p>
+        </article>
+
+        <article class="card">
+          <h2>4) Telegram Runtime Control</h2>
+          <p>Attach Telegram destination for runtime updates and alerts.</p>
+          <label>
+            <span>Telegram bot token</span>
+            <input id="telegram-token" type="password" />
+          </label>
+          <label>
+            <span>Telegram chat id</span>
+            <input id="telegram-chat-id" />
+          </label>
+          <button id="btn-save-telegram">Save Telegram</button>
+          <div class="actions mt-10">
+            <button id="btn-run-bot">Run Bot</button>
+            <button id="btn-stop-bot" class="secondary">Stop Bot</button>
+          </div>
+          <div class="status" id="bot-status"></div>
+        </article>
+
+        <article class="card full-width">
+          <h2>5) Dashboard Overview</h2>
+          <p>Unified view of security state, strategy footprint, and bot runtime metrics.</p>
+          <div class="actions">
+            <button id="btn-refresh-dashboard">Refresh Dashboard</button>
+          </div>
+          <div class="status" id="dashboard-status"></div>
+          <div class="stats" id="stats-grid">
+            <div class="stat-item">
+              <div class="stat-label">Bot status</div>
+              <div class="stat-value" id="stat-bot-status">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Strategies</div>
+              <div class="stat-value" id="stat-strategy-count">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Exchange connections</div>
+              <div class="stat-value" id="stat-exchange-count">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Telegram configured</div>
+              <div class="stat-value" id="stat-telegram">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Total trades</div>
+              <div class="stat-value" id="stat-total-trades">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Open positions</div>
+              <div class="stat-value" id="stat-open-positions">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Win rate</div>
+              <div class="stat-value" id="stat-win-rate">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Max drawdown</div>
+              <div class="stat-value" id="stat-drawdown">-</div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>
+

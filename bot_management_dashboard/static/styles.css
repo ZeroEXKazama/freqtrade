@@ -1,0 +1,177 @@
+* {
+  box-sizing: border-box;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0e1017;
+  color: #f4f7fb;
+}
+
+a {
+  color: #88b3ff;
+}
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.subtitle {
+  color: #9ea7ba;
+  margin: 8px 0 0;
+}
+
+.wallet-pill {
+  border: 1px solid #2d3443;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: #b5c0d9;
+  background: #141926;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  border: 1px solid #252b3a;
+  border-radius: 14px;
+  background: #151a26;
+  padding: 16px;
+  min-height: 180px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.card p {
+  margin: 4px 0 12px;
+  color: #a7b2c8;
+  font-size: 14px;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+label > span {
+  display: block;
+  margin-bottom: 6px;
+  color: #b8c3d9;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid #333c50;
+  background: #0f1522;
+  color: #edf2ff;
+  border-radius: 9px;
+  padding: 10px 11px;
+  font-size: 14px;
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+button {
+  border: 0;
+  border-radius: 9px;
+  background: #4a73ff;
+  color: white;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+button.secondary {
+  background: #27314a;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.status {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #b9f3c4;
+  min-height: 18px;
+}
+
+.status.error {
+  color: #ff9fa3;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.stat-item {
+  border: 1px solid #2a3244;
+  background: #111828;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.stat-label {
+  color: #96a2ba;
+  font-size: 12px;
+}
+
+.stat-value {
+  margin-top: 5px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
