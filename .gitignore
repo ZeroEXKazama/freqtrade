@@ -116,3 +116,7 @@ target/
 !config_examples/config_freqai.example.json
 
 docker-compose-*.yml
+
+# Local frontend build artifacts (not part of upstream freqtrade repo)
+platform/**/node_modules/
+platform/**/.next/
