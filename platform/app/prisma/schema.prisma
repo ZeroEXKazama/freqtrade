@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PlatformUser {
+  id             String   @id @default(uuid())
+  walletAddress  String   @unique
+  displayName    String?
+  isWhitelisted  Boolean  @default(false)
+  isAdmin        Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  lastLogin      DateTime?
+  config         PlatformConfig?
+  botInstance    PlatformBot?
+
+  @@map("platform_users")
+}
+
+model PlatformConfig {
+  id                    String   @id @default(uuid())
+  userId                String   @unique
+  user                  PlatformUser @relation(fields: [userId], references: [id])
+  mexcApiKeyEncrypted   String?
+  mexcApiSecretEncrypted String?
+  stakeAmount           Float    @default(1.0)
+  maxOpenTrades         Int      @default(10)
+  botStatus             String   @default("stopped")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("platform_configs")
+}
+
+model PlatformBot {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             PlatformUser @relation(fields: [userId], references: [id])
+  railwayServiceId String?
+  status           String   @default("stopped")
+  startedAt        DateTime?
+  stoppedAt        DateTime?
+  lastHeartbeat    DateTime?
+
+  @@map("platform_bots")
+}
