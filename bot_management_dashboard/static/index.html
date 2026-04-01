@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bot Management Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="hero">
+        <div>
+          <h1>Bot Management Dashboard</h1>
+          <p class="subtitle">
+            Secure onboarding and operations for MetaMask users running automated trading bots.
+          </p>
+        </div>
+        <div class="wallet-pill" id="wallet-pill">Wallet: disconnected</div>
+      </header>
+
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab-target="operations">Operations</button>
+        <button class="tab-btn" data-tab-target="backtesting">Backtesting Lab</button>
+      </nav>
+
+      <section class="tab-panel active" id="tab-operations">
+        <main class="layout">
+          <aside class="panel checklist-panel">
+            <h2>Setup Progress</h2>
+            <p class="panel-subtitle">Complete each step once and start the bot safely.</p>
+            <ul class="checklist">
+              <li><span class="dot" id="check-auth"></span><span>Wallet connected</span></li>
+              <li><span class="dot" id="check-exchange"></span><span>Exchange credentials saved</span></li>
+              <li><span class="dot" id="check-strategy"></span><span>Strategy configured</span></li>
+              <li><span class="dot" id="check-telegram"></span><span>Telegram connected</span></li>
+              <li><span class="dot" id="check-running"></span><span>Bot running</span></li>
+            </ul>
+            <div class="status" id="dashboard-status"></div>
+          </aside>
+
+          <section class="content">
+            <article class="card">
+              <div class="card-head">
+                <span class="step-number">1</span>
+                <div>
+                  <h2>Sign up / Sign in</h2>
+                  <p>Use MetaMask signature flow or a dev session.</p>
+                </div>
+              </div>
+              <div class="actions">
+                <button id="btn-connect-wallet">Connect + Sign In</button>
+                <button id="btn-dev-login" class="secondary">Dev Login</button>
+                <button id="btn-logout" class="ghost">Log out</button>
+              </div>
+              <div class="status" id="auth-status"></div>
+              <p class="mono soft" id="auth-wallet"></p>
+            </article>
+
+            <div class="split">
+              <article class="card">
+                <div class="card-head">
+                  <span class="step-number">2</span>
+                  <div>
+                    <h2>Exchange Access</h2>
+                    <p>Credentials are encrypted before storage.</p>
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <label>
+                    <span>Exchange</span>
+                    <select id="exchange-name">
+                      <option value="binance">Binance</option>
+                      <option value="bybit">Bybit</option>
+                      <option value="okx">OKX</option>
+                      <option value="kraken">Kraken</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>API key</span>
+                    <input id="exchange-api-key" type="password" placeholder="Enter API key" />
+                  </label>
+                  <label>
+                    <span>API secret</span>
+                    <input id="exchange-api-secret" type="password" placeholder="Enter API secret" />
+                  </label>
+                  <label>
+                    <span>Passphrase (optional)</span>
+                    <input id="exchange-passphrase" type="password" placeholder="Optional passphrase" />
+                  </label>
+                </div>
+                <button id="btn-save-exchange">Save Exchange Credentials</button>
+                <div class="status" id="exchange-status"></div>
+                <ul class="mini-list" id="exchange-list"></ul>
+              </article>
+
+              <article class="card">
+                <div class="card-head">
+                  <span class="step-number">3</span>
+                  <div>
+                    <h2>Telegram + Runtime</h2>
+                    <p>Set notification channel and control execution.</p>
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <label>
+                    <span>Telegram bot token</span>
+                    <input id="telegram-token" type="password" placeholder="123456:ABC..." />
+                  </label>
+                  <label>
+                    <span>Telegram chat id</span>
+                    <input id="telegram-chat-id" placeholder="Chat ID" />
+                  </label>
+                </div>
+                <div class="actions">
+                  <button id="btn-save-telegram">Save Telegram</button>
+                  <button id="btn-run-bot">Run Bot</button>
+                  <button id="btn-stop-bot" class="secondary">Stop Bot</button>
+                </div>
+                <div class="status" id="bot-status"></div>
+              </article>
+            </div>
+
+            <article class="card">
+              <div class="card-head">
+                <span class="step-number">4</span>
+                <div>
+                  <h2>Strategy Builder</h2>
+                  <p>Choose options and auto-generate the strategy JSON payload.</p>
+                </div>
+              </div>
+
+              <div class="builder-grid">
+                <label>
+                  <span>Strategy name</span>
+                  <input id="strategy-name" value="default-strategy" />
+                </label>
+                <label>
+                  <span>Template</span>
+                  <select id="strategy-template">
+                    <option value="trend-follow">Trend Follow</option>
+                    <option value="mean-reversion">Mean Reversion</option>
+                    <option value="breakout">Breakout</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Timeframe</span>
+                  <select id="strategy-timeframe">
+                    <option value="1m">1m</option>
+                    <option value="5m" selected>5m</option>
+                    <option value="15m">15m</option>
+                    <option value="1h">1h</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Stake amount (USDT)</span>
+                  <input id="strategy-stake-amount" type="number" min="10" step="1" value="100" />
+                </label>
+                <label>
+                  <span>Max open trades</span>
+                  <input id="strategy-max-open-trades" type="number" min="1" step="1" value="3" />
+                </label>
+                <label>
+                  <span>Stoploss (%)</span>
+                  <input id="strategy-stoploss-pct" type="number" min="0.1" step="0.1" value="8" />
+                </label>
+                <label>
+                  <span>Take profit (%)</span>
+                  <input id="strategy-take-profit-pct" type="number" min="0.1" step="0.1" value="15" />
+                </label>
+                <label>
+                  <span>Trailing stop</span>
+                  <select id="strategy-trailing-stop">
+                    <option value="false" selected>Off</option>
+                    <option value="true">On</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Leverage mode</span>
+                  <select id="strategy-leverage-mode">
+                    <option value="spot" selected>Spot</option>
+                    <option value="isolated">Isolated</option>
+                    <option value="cross">Cross</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Leverage</span>
+                  <input id="strategy-leverage-value" type="number" min="1" step="1" value="1" />
+                </label>
+                <label>
+                  <span>Entry signal</span>
+                  <select id="strategy-entry-signal">
+                    <option value="ema_cross" selected>EMA Cross</option>
+                    <option value="rsi_reversal">RSI Reversal</option>
+                    <option value="breakout_confirmed">Breakout Confirmed</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Risk level</span>
+                  <select id="strategy-risk-level">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Max daily loss (%)</span>
+                  <input id="strategy-max-daily-loss" type="number" min="1" step="0.5" value="5" />
+                </label>
+                <label>
+                  <span>Confirmation candles</span>
+                  <input id="strategy-confirmation-candles" type="number" min="1" step="1" value="2" />
+                </label>
+              </div>
+
+              <div class="builder-footer">
+                <div>
+                  <h3>Generated strategy JSON</h3>
+                  <pre id="strategy-json-preview"></pre>
+                </div>
+                <div class="builder-actions">
+                  <button id="btn-save-strategy">Save Strategy</button>
+                  <button id="btn-refresh-dashboard" class="secondary">Refresh Dashboard</button>
+                  <button id="btn-go-backtesting" class="ghost">Go to Backtesting</button>
+                  <div class="status" id="strategy-status"></div>
+                  <p class="mono soft" id="active-strategy"></p>
+                </div>
+              </div>
+              <ul class="mini-list" id="strategy-list"></ul>
+            </article>
+
+            <article class="card">
+              <div class="card-head">
+                <span class="step-number">5</span>
+                <div>
+                  <h2>Dashboard Overview</h2>
+                  <p>Unified metrics across strategies, exchange links, and runtime.</p>
+                </div>
+              </div>
+              <div class="stats" id="stats-grid">
+                <div class="stat-item">
+                  <div class="stat-label">Bot status</div>
+                  <div class="stat-value" id="stat-bot-status">-</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Strategies</div>
+                  <div class="stat-value" id="stat-strategy-count">-</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Exchange connections</div>
+                  <div class="stat-value" id="stat-exchange-count">-</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Telegram configured</div>
+                  <div class="stat-value" id="stat-telegram">-</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Total trades</div>
+                  <div class="stat-value" id="stat-total-trades">-</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Open positions</div>
+                  <div class="stat-value" id="stat-open-positions">-</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Win rate</div>
+                  <div class="stat-value" id="stat-win-rate">-</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Max drawdown</div>
+                  <div class="stat-value" id="stat-drawdown">-</div>
+                </div>
+              </div>
+            </article>
+          </section>
+        </main>
+      </section>
+
+      <section class="tab-panel" id="tab-backtesting">
+        <article class="card">
+          <div class="card-head">
+            <span class="step-number">B</span>
+            <div>
+              <h2>Backtesting Lab</h2>
+              <p>Compare multiple saved strategies over the same market assumptions.</p>
+            </div>
+          </div>
+          <div class="split">
+            <div class="card nested-card">
+              <h3>Scenario Inputs</h3>
+              <div class="form-grid">
+                <label>
+                  <span>Backtest timerange (days)</span>
+                  <input id="backtest-timerange-days" type="number" min="7" max="3650" value="180" />
+                </label>
+                <label>
+                  <span>Initial balance (USDT)</span>
+                  <input id="backtest-initial-balance" type="number" min="100" step="100" value="15000" />
+                </label>
+                <label>
+                  <span>Fee (%)</span>
+                  <input id="backtest-fee-pct" type="number" min="0" max="5" step="0.01" value="0.1" />
+                </label>
+                <label>
+                  <span>Slippage (%)</span>
+                  <input id="backtest-slippage-pct" type="number" min="0" max="5" step="0.01" value="0.05" />
+                </label>
+              </div>
+              <button id="btn-run-backtest">Run Backtest Comparison</button>
+              <div class="status" id="backtest-status"></div>
+            </div>
+
+            <div class="card nested-card">
+              <h3>Select Strategies</h3>
+              <p class="panel-subtitle">Pick at least one strategy to include.</p>
+              <div class="selector-list" id="backtest-strategy-selectors"></div>
+              <div class="status" id="backtest-meta"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Backtest Summary</h2>
+          <div class="stats">
+            <div class="stat-item">
+              <div class="stat-label">Best strategy</div>
+              <div class="stat-value" id="backtest-best-strategy">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Compared strategies</div>
+              <div class="stat-value" id="backtest-strategy-count">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Top net profit</div>
+              <div class="stat-value" id="backtest-top-profit">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Top return</div>
+              <div class="stat-value" id="backtest-top-return">-</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Strategy Comparison</h2>
+          <div class="table-wrap">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Strategy</th>
+                  <th>Total Trades</th>
+                  <th>Win Rate</th>
+                  <th>Max Drawdown</th>
+                  <th>Return</th>
+                  <th>Net Profit</th>
+                  <th>Sharpe</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody id="backtest-results-body"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>
+
